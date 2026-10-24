@@ -229,7 +229,7 @@ public class GridTest
     [TestCase(0, 0, 0, 1, 1, 1, 1)]
     [TestCase(0, 0, 0, 0, 2, 1, 2)]
     [TestCase(2, 1, 4, 0, 0, 1, 3)]
-    [TestCase(50,23,12, 21, 6, 2, 56)]
+    [TestCase(50,23,12, 21, 6, 2, 29)]
     public void DistanceInSquares_IsTheLargestGap_AndSymmetric(int ax, int ay, int az, int bx, int by, int bz, int expected)
     {
         GridPosition a = P(ax, ay, az);
