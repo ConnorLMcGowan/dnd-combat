@@ -19,16 +19,28 @@ namespace DnDCombat.Core
     public class Creature
     {
         public string Name { get; private set; }
+        public int MaxHP { get; private set; }        
+        public int CurrentHP { get; private set; }
+        public int ArmourClass { get; private set; }
+        public int Speed { get; private set; }
+        public int ProficiencyBonus { get; private set; }
+        public bool IsDefeated => CurrentHP <= 0;
 
         // The six scores live here, keyed by the Ability enum.
         // Private, so nothing outside Creature can change them.
         private readonly Dictionary<Ability, int> _scores = new Dictionary<Ability, int>();
 
         // Creature Constructor
-        public Creature(string name, int strength, int dexterity, int constitution,
-                        int intelligence, int wisdom, int charisma)
+        public Creature(string name, 
+                        int strength = 10, int dexterity = 10, int constitution = 10, int intelligence = 10, int wisdom = 10, int charisma = 10, 
+                        int maxHP = 10, int armourClass = 10, int speed = 30, int proficiencyBonus = 2)
         {
             Name = name;
+            MaxHP = maxHP;
+            CurrentHP = maxHP;
+            ArmourClass = armourClass;
+            Speed = speed;
+            ProficiencyBonus = proficiencyBonus;
             _scores[Ability.Strength] = strength;
             _scores[Ability.Dexterity] = dexterity;
             _scores[Ability.Constitution] = constitution;
@@ -51,6 +63,21 @@ namespace DnDCombat.Core
         {
             float modifier = (score - 10) / 2.0f;
             return (int)Math.Floor(modifier);
+        }
+        public void TakeDamage(int amount)
+        {
+            if (amount <= 0) return;
+            CurrentHP = Math.Max(CurrentHP - amount, 0);     
+        }
+        public void Heal(int amount)
+        {
+            if (amount <= 0) return;
+            int room = MaxHP - CurrentHP;
+
+            if (amount > room)
+                amount = room;
+
+            CurrentHP = Math.Min(CurrentHP + amount, MaxHP);            
         }
     }
 }
