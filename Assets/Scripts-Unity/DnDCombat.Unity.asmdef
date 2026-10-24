@@ -1,0 +1,16 @@
+{
+    "name": "DnDCombat.Unity",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2b856e71e8226474f930f38d53020a1b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
