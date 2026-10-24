@@ -2,7 +2,7 @@ using System;
 
 namespace DnDCombat.Core
 {
-    public class Dice
+    public class Dice : IDice
     {
         private readonly Random _random;
         public Dice(int seed)
