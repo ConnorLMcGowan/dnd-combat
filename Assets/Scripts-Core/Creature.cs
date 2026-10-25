@@ -24,6 +24,7 @@ namespace DnDCombat.Core
         public int ArmourClass { get; private set; }
         public int Speed { get; private set; }
         public int ProficiencyBonus { get; private set; }
+        public int AttacksPerAction { get; private set; }
         public bool IsDefeated => CurrentHP <= 0;
 
         // The six scores live here, keyed by the Ability enum.
@@ -33,7 +34,7 @@ namespace DnDCombat.Core
         // Creature Constructor
         public Creature(string name, 
                         int strength = 10, int dexterity = 10, int constitution = 10, int intelligence = 10, int wisdom = 10, int charisma = 10, 
-                        int maxHP = 10, int armourClass = 10, int speed = 30, int proficiencyBonus = 2)
+                        int maxHP = 10, int armourClass = 10, int speed = 30, int proficiencyBonus = 2, int attacksPerAction = 1)
         {
             Name = name;
             MaxHP = maxHP;
@@ -41,6 +42,7 @@ namespace DnDCombat.Core
             ArmourClass = armourClass;
             Speed = speed;
             ProficiencyBonus = proficiencyBonus;
+            AttacksPerAction = Math.Max(1, attacksPerAction);
             _scores[Ability.Strength] = strength;
             _scores[Ability.Dexterity] = dexterity;
             _scores[Ability.Constitution] = constitution;

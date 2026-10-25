@@ -12,6 +12,7 @@ namespace DnDCombat.Core
         public int MovementRemaining { get; set; }   // in feet
         public bool ActionAvailable { get; set; }
         public bool BonusActionAvailable { get; set; }
+        public int AttacksRemaining { get; set; }
 
         public Combatant(Creature creature, Team team)
         {

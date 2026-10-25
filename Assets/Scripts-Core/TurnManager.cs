@@ -97,6 +97,7 @@ namespace DnDCombat.Core
                     Current.MovementRemaining = Current.Creature.Speed;
                     Current.ActionAvailable = true;
                     Current.BonusActionAvailable = true;
+                    Current.AttacksRemaining = 0;
                     return;
                 }
                 index++;

@@ -1,9 +1,25 @@
 using System;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DnDCombat.Core
 {
     public enum MoveFailure { None, CombatOver, NotYourTurn, CreatureDefeated, NotOnGrid, CannotReach, NoMovementLeft, AlreadyThere, UnexpectedError }
+    public enum AttackFailure    { None, CombatOver, NotYourTurn, AttackerDefeated, InvalidTarget, TargetDefeated, NoActionLeft, NotOnGrid, OutOfReach }
+
+    public readonly struct AttackOutcome
+    {
+        public bool Success { get; }
+        public AttackFailure Failure { get; }
+        public AttackResult Result { get; }   // default when it failed
+
+        public AttackOutcome(bool success, AttackFailure failure, AttackResult result)
+        {
+            Success = success;
+            Failure = failure;
+            Result = result;
+        }
+    }
 
     // Says what happened, so the UI can animate the path or explain a refusal
     public readonly struct MoveResult
@@ -26,11 +42,13 @@ namespace DnDCombat.Core
     {
         public TurnManager Turns { get; }
         public Grid Grid { get; }
+        private readonly AttackResolver _resolver;
 
-        public CombatController(TurnManager turns, Grid grid)
+        public CombatController(TurnManager turns, Grid grid, AttackResolver resolver)
         {
             Turns = turns;
             Grid = grid;
+            _resolver = resolver;
         }
 
         /////////////////////////////////
@@ -56,32 +74,93 @@ namespace DnDCombat.Core
         // ---------- Actions ---------- //
         /////////////////////////////////
 
+        public AttackOutcome TryAttack(Combatant attacker, Combatant target, AttackProfile attack)
+        {
+            if (Turns.State != CombatState.Ongoing)
+            {
+                return FailAttack(AttackFailure.CombatOver);
+            }
+            if (attacker == null || attacker != Turns.Current)
+            {
+                return FailAttack(AttackFailure.NotYourTurn);
+            }
+            if (attacker.Creature.IsDefeated)
+            {
+                return FailAttack(AttackFailure.AttackerDefeated);
+            }
+            if (target == null || target.Team == attacker.Team)
+            {
+                return FailAttack(AttackFailure.InvalidTarget);
+            }
+            if (target.Creature.IsDefeated)
+            {
+                return FailAttack(AttackFailure.TargetDefeated);
+            }
+            if (!attacker.ActionAvailable && attacker.AttacksRemaining <= 0)
+            {
+                return FailAttack(AttackFailure.NoActionLeft);
+            }
+            if (!Grid.TryGetPosition(attacker, out GridPosition attackerPosition) ||
+                !Grid.TryGetPosition(target, out GridPosition targetPosition))
+            {
+                return FailAttack(AttackFailure.NotOnGrid);
+            }
+
+            if (Grid.DistanceInSquares(attackerPosition, targetPosition) > attack.RangeSquares)
+            {
+                return FailAttack(AttackFailure.OutOfReach);
+            }
+
+            // 8. Resolve the attack
+            AttackResult result = _resolver.Resolve(
+                                  attacker.Creature, 
+                                  target.Creature, 
+                                  attack.AttackBonus, 
+                                  attack.DamageDiceCount, 
+                                  attack.DamageSides, 
+                                  attack.DamageBonus);
+            // 9. Spend an attack
+            if (attacker.AttacksRemaining > 0)
+            {
+                attacker.AttacksRemaining--;          // continuing an Attack action already started
+            }
+            else
+            {
+                attacker.ActionAvailable = false;     // starting the Attack action
+                attacker.AttacksRemaining = attacker.Creature.AttacksPerAction - 1;
+            }
+            // 10. Check whether that ended the fight
+            Turns.CheckCombatEnd();
+            // 11. Return a successful outcome
+            return new AttackOutcome(true, AttackFailure.None, result);
+        }
+
         public MoveResult TryMove(Combatant mover, GridPosition destination) 
         {
             if(Turns.State != CombatState.Ongoing)
             {
-                return Fail(MoveFailure.CombatOver);
+                return FailMove(MoveFailure.CombatOver);
             }
             if(mover == null || mover != Turns.Current)
             {
-                return Fail(MoveFailure.NotYourTurn);
+                return FailMove(MoveFailure.NotYourTurn);
             }
-            if(mover.Creature.IsDefeated == true)
+            if(mover.Creature.IsDefeated)
             {
-                return Fail(MoveFailure.CreatureDefeated);
+                return FailMove(MoveFailure.CreatureDefeated);
             }
 
             if (!Grid.TryGetPosition(mover, out GridPosition position))
             {
-                return Fail(MoveFailure.NotOnGrid);
+                return FailMove(MoveFailure.NotOnGrid);
             }
             if (position == destination)
             {
-                return Fail(MoveFailure.AlreadyThere);
+                return FailMove(MoveFailure.AlreadyThere);
             }
             if (mover.MovementRemaining < Pathfinder.FeetPerSquare)
             {
-                return Fail(MoveFailure.NoMovementLeft);
+                return FailMove(MoveFailure.NoMovementLeft);
             }
 
             MovementRange range = Pathfinder.FindReachable(Grid, mover, mover.MovementRemaining);
@@ -89,14 +168,14 @@ namespace DnDCombat.Core
 
             if (path.Count == 0)
             {
-                return Fail(MoveFailure.CannotReach);
+                return FailMove(MoveFailure.CannotReach);
             }
 
             int cost = path.Count * Pathfinder.FeetPerSquare;
 
             if (!Grid.MoveTo(mover, destination))
             {
-                return Fail(MoveFailure.UnexpectedError);
+                return FailMove(MoveFailure.UnexpectedError);
             }
 
             // spend the movement here
@@ -106,8 +185,15 @@ namespace DnDCombat.Core
             return new MoveResult(true, MoveFailure.None, path, cost);
 
         }
-
-        private static MoveResult Fail(MoveFailure reason)
+        public void EndTurn()
+        {
+            Turns.EndTurn();
+        }
+        private static AttackOutcome FailAttack(AttackFailure reason)
+        {
+            return new AttackOutcome(false, reason, default);
+        }
+        private static MoveResult FailMove(MoveFailure reason)
         {
             return new MoveResult(false, reason, new List<GridPosition>(), 0);
 

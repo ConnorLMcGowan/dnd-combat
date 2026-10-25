@@ -18,7 +18,6 @@ namespace DnDCombat.Core
             bool isCrit;
             int damage;
 
-
             if (d20Roll == 20)
             {
                 isCrit = true;
