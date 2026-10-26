@@ -57,7 +57,7 @@ public class CombatControllerTest
         };
     }
 
-    private static readonly AttackProfile Sword = new AttackProfile("Longsword", 5, 1, 8, 3);
+    private static readonly AttackProfile Sword = new AttackProfile("Longsword", 5, 1, 8, 3, DamageType.Slashing);
 
     // The hero is at (7, 0, 7)
     private static void PutEnemyNextToHero(Arena a)

@@ -7,10 +7,11 @@ namespace DnDCombat.Core
         public int DamageDiceCount { get; }
         public int DamageSides { get; }
         public int DamageBonus { get; }
-        public int RangeSquares { get; }   // 1 = melee
+        public int RangeSquares { get; }   // 1 = melee (5ft)
+        public DamageType DamageType { get; }
 
-        public AttackProfile(string name, int attackBonus, int damageDiceCount,
-                             int damageSides, int damageBonus, int rangeSquares = 1)
+        public AttackProfile(string name, int attackBonus, int damageDiceCount, int damageSides,
+                            int damageBonus, DamageType damageType, int rangeSquares = 1)
         {
             Name = name;
             AttackBonus = attackBonus;
@@ -18,6 +19,7 @@ namespace DnDCombat.Core
             DamageSides = damageSides;
             DamageBonus = damageBonus;
             RangeSquares = rangeSquares;
+            DamageType = damageType;
         }
     }
 }

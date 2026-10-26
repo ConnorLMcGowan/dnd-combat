@@ -11,8 +11,8 @@ public class MonsterAITest
 
     // d20 of 14 plus the +4 bonus is 18, which beats the default AC of 10.
     // Damage is the roll plus 2, so a damage roll of 4 deals 6.
-    private static readonly AttackProfile Shortsword = new AttackProfile("Shortsword", 4, 1, 6, 2);
-    private static readonly AttackProfile Spear = new AttackProfile("Spear", 4, 1, 6, 2, 2);
+    private static readonly AttackProfile Shortsword = new AttackProfile("Shortsword", 4, 1, 6, 2, DamageType.Piercing);
+    private static readonly AttackProfile Spear = new AttackProfile("Spear", 4, 1, 6, 2, DamageType.Piercing, 2);
 
     private static Combatant Make(string name, Team team, int maxHP = 10, int attacksPerAction = 1)
     {

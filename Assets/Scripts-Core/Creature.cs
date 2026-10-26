@@ -26,6 +26,10 @@ namespace DnDCombat.Core
         public int ProficiencyBonus { get; private set; }
         public int AttacksPerAction { get; private set; }
         public bool IsDefeated => CurrentHP <= 0;
+        private readonly HashSet<DamageType> _resistances;
+        private readonly HashSet<DamageType> _vulnerabilities;
+        private readonly HashSet<DamageType> _immunities;
+
 
         // The six scores live here, keyed by the Ability enum.
         // Private, so nothing outside Creature can change them.
@@ -34,7 +38,10 @@ namespace DnDCombat.Core
         // Creature Constructor
         public Creature(string name, 
                         int strength = 10, int dexterity = 10, int constitution = 10, int intelligence = 10, int wisdom = 10, int charisma = 10, 
-                        int maxHP = 10, int armourClass = 10, int speed = 30, int proficiencyBonus = 2, int attacksPerAction = 1)
+                        int maxHP = 10, int armourClass = 10, int speed = 30, int proficiencyBonus = 2, int attacksPerAction = 1, 
+                        IEnumerable<DamageType> resistances = null,
+                        IEnumerable<DamageType> vulnerabilities = null,
+                        IEnumerable<DamageType> immunities = null)
         {
             Name = name;
             MaxHP = maxHP;
@@ -43,6 +50,11 @@ namespace DnDCombat.Core
             Speed = speed;
             ProficiencyBonus = proficiencyBonus;
             AttacksPerAction = Math.Max(1, attacksPerAction);
+
+            _resistances = new HashSet<DamageType>(resistances ?? new DamageType[0]);
+            _vulnerabilities = new HashSet<DamageType>(vulnerabilities ?? new DamageType[0]);
+            _immunities = new HashSet<DamageType>(immunities ?? new DamageType[0]);
+
             _scores[Ability.Strength] = strength;
             _scores[Ability.Dexterity] = dexterity;
             _scores[Ability.Constitution] = constitution;
@@ -81,5 +93,8 @@ namespace DnDCombat.Core
 
             CurrentHP = Math.Min(CurrentHP + amount, MaxHP);            
         }
+        public bool IsResistantTo(DamageType type) { return _resistances.Contains(type); }
+        public bool IsVulnerableTo(DamageType type) { return _vulnerabilities.Contains(type); }
+        public bool IsImmuneTo(DamageType type) { return _immunities.Contains(type); }
     }
 }

@@ -15,7 +15,7 @@ public class StatBlocksTest
         Assert.That(fighter.Name, Is.EqualTo("Fighter"));
         Assert.That(fighter.MaxHP, Is.EqualTo(12));
         Assert.That(fighter.CurrentHP, Is.EqualTo(12));
-        Assert.That(fighter.ArmourClass, Is.EqualTo(18));
+        Assert.That(fighter.ArmourClass, Is.EqualTo(17));   // chain mail 16 + Defense 1
         Assert.That(fighter.Speed, Is.EqualTo(30));
         Assert.That(fighter.ProficiencyBonus, Is.EqualTo(2));
         Assert.That(fighter.AttacksPerAction, Is.EqualTo(1));

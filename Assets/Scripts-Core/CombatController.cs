@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DnDCombat.Core
 {
@@ -43,6 +42,7 @@ namespace DnDCombat.Core
         public TurnManager Turns { get; }
         public Grid Grid { get; }
         private readonly AttackResolver _resolver;
+        public event Action<AttackReport> AttackResolved;
 
         public CombatController(TurnManager turns, Grid grid, AttackResolver resolver)
         {
@@ -76,6 +76,7 @@ namespace DnDCombat.Core
 
         public AttackOutcome TryAttack(Combatant attacker, Combatant target, AttackProfile attack)
         {
+            // 1. Check if attack is valid
             if (Turns.State != CombatState.Ongoing)
             {
                 return FailAttack(AttackFailure.CombatOver);
@@ -111,15 +112,16 @@ namespace DnDCombat.Core
                 return FailAttack(AttackFailure.OutOfReach);
             }
 
-            // 8. Resolve the attack
+            // 2. Resolve the attack
             AttackResult result = _resolver.Resolve(
                                   attacker.Creature, 
                                   target.Creature, 
                                   attack.AttackBonus, 
                                   attack.DamageDiceCount, 
                                   attack.DamageSides, 
-                                  attack.DamageBonus);
-            // 9. Spend an attack
+                                  attack.DamageBonus,
+                                  attack.DamageType);
+            // 3. Spend an attack
             if (attacker.AttacksRemaining > 0)
             {
                 attacker.AttacksRemaining--;          // continuing an Attack action already started
@@ -129,9 +131,14 @@ namespace DnDCombat.Core
                 attacker.ActionAvailable = false;     // starting the Attack action
                 attacker.AttacksRemaining = attacker.Creature.AttacksPerAction - 1;
             }
-            // 10. Check whether that ended the fight
+            // 4. Announce the attack (HP is read now, so each report keeps its own value)
+            AttackReport report = new AttackReport(attacker, target, result,
+                                                   target.Creature.CurrentHP,
+                                                   target.Creature.IsDefeated);
+            AttackResolved?.Invoke(report);
+            // 5. Check whether that ended the fight
             Turns.CheckCombatEnd();
-            // 11. Return a successful outcome
+            // 6. Return a successful outcome
             return new AttackOutcome(true, AttackFailure.None, result);
         }
 

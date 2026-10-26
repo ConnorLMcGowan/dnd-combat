@@ -18,13 +18,16 @@ namespace DnDCombat.Core
         }
 
         // +3 STR and +2 proficiency to hit. Two-handed slashing.
-        public static readonly AttackProfile FighterGreatsword = new AttackProfile("Greatsword", 5, 2, 6, 3);
+        public static readonly AttackProfile FighterGreatsword = new AttackProfile("Greatsword", 5, 2, 6, 3, DamageType.Slashing);
 
         // Same bonuses, one-handed bludgeoning
-        public static readonly AttackProfile FighterFlail = new AttackProfile("Flail", 5, 1, 8, 3);
+        public static readonly AttackProfile FighterFlail = new AttackProfile("Flail", 5, 1, 8, 3, DamageType.Bludgeoning);
 
-        // One-handed longsword: +3 STR and +2 proficiency to hit, 1d8 + 3 damage
-        public static readonly AttackProfile FighterLongsword = new AttackProfile("Longsword", 5, 1, 8, 3);
+        // One-handed longsword: +3 STR and +2 proficiency to hit, 1d8 + 3 slashing damage
+        public static readonly AttackProfile FighterLongsword = new AttackProfile("Longsword", 5, 1, 8, 3, DamageType.Slashing);
+
+        // Halberd: same bonuses, 1d10 slashing with 10 ft of reach (2 squares)
+        public static readonly AttackProfile FighterHalberd = new AttackProfile("Halberd", 5, 1, 10, 3, DamageType.Slashing, 2);
 
         ////////////////////////////////////
         // ---------- Skeleton ---------- //
@@ -36,9 +39,11 @@ namespace DnDCombat.Core
             return new Creature(name,
                 strength: 10, dexterity: 16, constitution: 15,
                 intelligence: 6, wisdom: 8, charisma: 5,
-                maxHP: 13, armourClass: 14, speed: 30, proficiencyBonus: 2);
+                maxHP: 13, armourClass: 14, speed: 30, proficiencyBonus: 2,
+                vulnerabilities: new[] { DamageType.Bludgeoning },
+                immunities: new[] { DamageType.Poison });
         }
 
-        public static readonly AttackProfile SkeletonShortsword = new AttackProfile("Shortsword", 5, 1, 6, 3);
+        public static readonly AttackProfile SkeletonShortsword = new AttackProfile("Shortsword", 5, 1, 6, 3, DamageType.Piercing);
     }
 }

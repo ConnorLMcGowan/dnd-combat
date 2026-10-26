@@ -26,6 +26,10 @@ namespace DnDCombat.Core
             _combatants = new List<Combatant>(combatants);
         }
 
+        public TurnManager(Dice dice, Combatant fighter, Combatant skeleton)
+        {
+        }
+
         public void StartCombat()
         {
             State = CombatState.Ongoing;

@@ -10,7 +10,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 30, armourClass: 30);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, 3);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, 3, DamageType.Slashing);
 
         Assert.That(result.Hit, Is.True);
         Assert.That(result.IsCrit, Is.True);
@@ -23,7 +23,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 30, armourClass: 1);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 20, 1, 8, 3);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 20, 1, 8, 3, DamageType.Slashing);
 
         Assert.That(result.Hit, Is.False);
         Assert.That(result.IsCrit, Is.False);
@@ -40,7 +40,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 30, armourClass: 15);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 5, 1, 8, 0);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 5, 1, 8, 0, DamageType.Slashing);
 
         Assert.That(result.Hit, Is.EqualTo(expectedHit));
     }
@@ -52,7 +52,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 30, armourClass: 10);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 2, 6, 3);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 2, 6, 3, DamageType.Slashing);
 
         Assert.That(dice.LastRollCount, Is.EqualTo(2));
         Assert.That(dice.LastRollSides, Is.EqualTo(6));
@@ -67,7 +67,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 30, armourClass: 10);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, 3);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, 3, DamageType.Slashing);
 
         Assert.That(dice.LastRollCount, Is.EqualTo(2));
         Assert.That(result.Damage, Is.EqualTo(15));     // 12 + 3, not 12 + 6
@@ -81,7 +81,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 30, armourClass: 10);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, -5);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, -5, DamageType.Slashing);
 
         Assert.That(result.Damage, Is.EqualTo(0));
         Assert.That(target.CurrentHP, Is.EqualTo(30));
@@ -94,7 +94,7 @@ public class AttackResolverTest
         Creature target = new Creature("Target", maxHP: 5, armourClass: 10);
         AttackResolver resolver = new AttackResolver(dice);
 
-        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, 0);
+        AttackResult result = resolver.Resolve(new Creature("Attacker"), target, 0, 1, 8, 0, DamageType.Slashing);
 
         Assert.That(result.Damage, Is.EqualTo(8));      // rolled damage, as decided
         Assert.That(target.CurrentHP, Is.EqualTo(0));

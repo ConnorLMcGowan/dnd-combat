@@ -10,13 +10,12 @@ namespace DnDCombat.Core
             _dice = dice;
         }
 
-        public AttackResult Resolve(Creature attacker, Creature target, int attackBonus, int damageDiceCount, int damageSides, int damageBonus)
+        public AttackResult Resolve(Creature attacker, Creature target, int attackBonus, int damageDiceCount, int damageSides, int damageBonus, DamageType damageType)
         {
             int d20Roll = _dice.RollD20();
             int attackTotal = d20Roll + attackBonus;
             bool hit;
             bool isCrit;
-            int damage;
 
             if (d20Roll == 20)
             {
@@ -26,17 +25,11 @@ namespace DnDCombat.Core
             }
             else if (d20Roll == 1)
             {
-                isCrit = false;
-                hit = false;
-                damage = 0;
-                return new AttackResult(d20Roll, attackTotal, hit, isCrit, damage);
+                return new AttackResult(d20Roll, attackTotal, false, false, 0, 0, DamageEffect.Normal);
             }
-            else if(attackTotal < target.ArmourClass)
+            else if (attackTotal < target.ArmourClass)
             {
-                isCrit = false;
-                hit = false;
-                damage = 0;
-                return new AttackResult(d20Roll, attackTotal, hit, isCrit, damage);
+                return new AttackResult(d20Roll, attackTotal, false, false, 0, 0, DamageEffect.Normal);
             }
             else
             {
@@ -44,10 +37,11 @@ namespace DnDCombat.Core
                 hit = true;
             }
 
-            damage = Math.Max(0, _dice.Roll(damageDiceCount, damageSides) + damageBonus);
-            target.TakeDamage(damage);
+            int rolledDamage = Math.Max(0, _dice.Roll(damageDiceCount, damageSides) + damageBonus);
+            DamageAdjustment adjusted = DamageRules.Adjust(target, damageType, rolledDamage);
+            target.TakeDamage(adjusted.Amount);
 
-            return new AttackResult(d20Roll, attackTotal, hit, isCrit, damage);
+            return new AttackResult(d20Roll, attackTotal, hit, isCrit, rolledDamage, adjusted.Amount, adjusted.Effect);
         }
     }
 }
