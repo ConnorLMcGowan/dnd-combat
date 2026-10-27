@@ -78,8 +78,8 @@ namespace DnDCombat.Core
             if (State != CombatState.Ongoing)
             {
                 Current = null;
-            }
-            CombatEnded?.Invoke(State);
+                CombatEnded?.Invoke(State);
+            }            
         }
 
         private void StartTurnFrom(int startIndex)

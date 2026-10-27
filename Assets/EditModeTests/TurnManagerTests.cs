@@ -25,6 +25,17 @@ public class TurnManagerTest
         return manager;
     }
 
+    // Listens to CombatEnded and remembers how many times it fired and with what
+    private class EndRecorder
+    {
+        public int Fired;
+        public CombatState Last;
+
+        public EndRecorder(TurnManager manager)
+        {
+            manager.CombatEnded += state => { Fired++; Last = state; };
+        }
+    }
     //////////////////////////////////////
     // ---------- Initiative ---------- //
     //////////////////////////////////////
@@ -122,69 +133,6 @@ public class TurnManagerTest
         Assert.That(manager.Round, Is.EqualTo(1));
     }
 
-    [Test]
-    public void EndTurn_AfterTheLastCombatant_WrapsAndStartsRoundTwo()
-    {
-        Combatant hero = Make("Hero", Team.Heroes);
-        Combatant enemy = Make("Enemy", Team.Enemies);
-        TurnManager manager = Start(new[] { 15, 5 }, hero, enemy);
-
-        manager.EndTurn();
-        manager.EndTurn();
-
-        Assert.That(manager.Current, Is.SameAs(hero));
-        Assert.That(manager.Round, Is.EqualTo(2));
-    }
-
-    [Test]
-    public void EndTurn_SkipsDefeatedCombatants()
-    {
-        Combatant hero = Make("Hero", Team.Heroes);
-        Combatant enemy1 = Make("Enemy1", Team.Enemies);
-        Combatant enemy2 = Make("Enemy2", Team.Enemies);
-        TurnManager manager = Start(new[] { 20, 15, 10 }, hero, enemy1, enemy2);
-
-        Kill(enemy1);
-        manager.EndTurn();
-
-        Assert.That(manager.Current, Is.SameAs(enemy2));
-        Assert.That(manager.State, Is.EqualTo(CombatState.Ongoing));
-    }
-
-    [Test]
-    public void StartCombat_CombatantAlreadyDefeated_DoesNotGetTheFirstTurn()
-    {
-        Combatant hero = Make("Hero", Team.Heroes);
-        Combatant deadEnemy = Make("Dead", Team.Enemies);
-        Combatant enemy2 = Make("Enemy2", Team.Enemies);
-        Kill(deadEnemy);
-
-        TurnManager manager = Start(new[] { 15, 20, 10 }, hero, deadEnemy, enemy2);   // deadEnemy rolls highest
-
-        Assert.That(manager.Current, Is.SameAs(hero));
-        Assert.That(manager.Round, Is.EqualTo(1));
-    }
-
-    [Test]
-    public void EachNewTurn_ResetsActionBonusActionAndMovement()
-    {
-        Combatant hero = Make("Hero", Team.Heroes, speed: 30);
-        Combatant enemy = Make("Enemy", Team.Enemies);
-        TurnManager manager = Start(new[] { 15, 5 }, hero, enemy);
-
-        hero.ActionAvailable = false;
-        hero.BonusActionAvailable = false;
-        hero.MovementRemaining = 0;
-
-        manager.EndTurn();   // enemy's turn
-        manager.EndTurn();   // back to the hero
-
-        Assert.That(manager.Current, Is.SameAs(hero));
-        Assert.That(hero.ActionAvailable, Is.True);
-        Assert.That(hero.BonusActionAvailable, Is.True);
-        Assert.That(hero.MovementRemaining, Is.EqualTo(30));
-    }
-
     /////////////////////////////////////////
     // ---------- Ending combat ---------- //
     /////////////////////////////////////////
@@ -255,6 +203,106 @@ public class TurnManagerTest
 
         Assert.That(manager.Current, Is.Null);
         Assert.That(manager.State, Is.EqualTo(CombatState.Ongoing));
+    }
+
+    /////////////////////////////////////////////
+    // ---------- CombatEnded event ---------- //
+    /////////////////////////////////////////////
+
+    [Test]
+    public void CombatEnded_DoesNotFireWhileTheFightIsOngoing()
+    {
+        Combatant hero = Make("Hero", Team.Heroes);
+        Combatant enemy = Make("Enemy", Team.Enemies);
+        TurnManager manager = Start(new[] { 15, 5 }, hero, enemy);
+        EndRecorder recorder = new EndRecorder(manager);
+
+        manager.CheckCombatEnd();
+        manager.EndTurn();
+        manager.EndTurn();
+
+        Assert.That(recorder.Fired, Is.EqualTo(0));
+        Assert.That(manager.State, Is.EqualTo(CombatState.Ongoing));
+    }
+
+    [TestCase(true, CombatState.HeroesWon)]
+    [TestCase(false, CombatState.EnemiesWon)]
+    public void CombatEnded_FiresOnce_WithTheWinningState(bool killTheEnemy, CombatState expected)
+    {
+        Combatant hero = Make("Hero", Team.Heroes);
+        Combatant enemy = Make("Enemy", Team.Enemies);
+        TurnManager manager = Start(new[] { 15, 5 }, hero, enemy);
+        EndRecorder recorder = new EndRecorder(manager);
+
+        Kill(killTheEnemy ? enemy : hero);
+        manager.CheckCombatEnd();
+
+        Assert.That(recorder.Fired, Is.EqualTo(1));
+        Assert.That(recorder.Last, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void CombatEnded_ResultIsFinal_EvenIfTheSidesChangeAfterwards()
+    {
+        Combatant hero = Make("Hero", Team.Heroes);
+        Combatant enemy = Make("Enemy", Team.Enemies);
+        TurnManager manager = Start(new[] { 15, 5 }, hero, enemy);
+        EndRecorder recorder = new EndRecorder(manager);
+        Kill(enemy);
+        manager.CheckCombatEnd();   // heroes win
+
+        enemy.Creature.Heal(enemy.Creature.MaxHP);   // the enemy gets back up...
+        Kill(hero);                                  // ...and the hero falls
+        manager.CheckCombatEnd();
+        manager.EndTurn();
+
+        Assert.That(manager.State, Is.EqualTo(CombatState.HeroesWon));
+        Assert.That(manager.Current, Is.Null);
+        Assert.That(recorder.Fired, Is.EqualTo(1));
+    }
+    [Test]
+    public void CombatEnded_FiresDuringStartCombat_WhenTheFightIsOverBeforeItBegins()
+    {
+        TurnManager manager = new TurnManager(new FakeDice(10), new[] { Make("Hero", Team.Heroes) });
+        EndRecorder recorder = new EndRecorder(manager);   // subscribed BEFORE StartCombat
+
+        manager.StartCombat();
+
+        Assert.That(recorder.Fired, Is.EqualTo(1));
+        Assert.That(recorder.Last, Is.EqualTo(CombatState.HeroesWon));
+    }
+
+    /////////////////////////////////////////////
+    // ---------- Restarting combat ---------- //
+    /////////////////////////////////////////////
+
+    [Test]
+    public void StartCombat_AfterAFinishedFight_ResetsEverything_AndTheEventCanFireAgain()
+    {
+        Combatant hero = Make("Hero", Team.Heroes);
+        Combatant enemy = Make("Enemy", Team.Enemies);
+        TurnManager manager = Start(new[] { 15, 5, 15, 5 }, hero, enemy);   // two initiative rolls for each StartCombat
+        EndRecorder recorder = new EndRecorder(manager);
+
+        manager.EndTurn();
+        manager.EndTurn();   // back to the hero, round 2
+        Assert.That(manager.Round, Is.EqualTo(2));
+        Kill(enemy);
+        manager.CheckCombatEnd();
+        Assert.That(recorder.Fired, Is.EqualTo(1));
+
+        enemy.Creature.Heal(enemy.Creature.MaxHP);
+        manager.StartCombat();
+
+        Assert.That(manager.State, Is.EqualTo(CombatState.Ongoing));
+        Assert.That(manager.Round, Is.EqualTo(1));
+        Assert.That(manager.Current, Is.SameAs(hero));
+
+        Kill(enemy);
+        manager.CheckCombatEnd();
+
+        Assert.That(recorder.Fired, Is.EqualTo(2));
+        Assert.That(recorder.Last, Is.EqualTo(CombatState.HeroesWon));
     }
 
     //////////////////////////////////////

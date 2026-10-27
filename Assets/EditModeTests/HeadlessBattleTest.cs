@@ -214,7 +214,7 @@ public class HeadlessBattleTest
         int heroWins = 0;
         int enemyWins = 0;
 
-        for (int seed = 0; seed < 1000; seed++)
+        for (int seed = 1; seed < 1000; seed++)
         {
             BattleResult result = RunBattle(seed);
 

@@ -318,6 +318,35 @@ public class CombatControllerTest
         Assert.That(a.Controller.TryAttack(a.Hero, a.Enemy, Sword).Failure, Is.EqualTo(AttackFailure.CombatOver));
     }
 
+    [Test]
+    public void ANonLethalHit_DoesNotRaiseCombatEnded()
+    {
+        Arena a = NewArena(14, 6);   // 6 + 3 = 9 damage against 10 HP
+        PutEnemyNextToHero(a);
+        int fired = 0;
+        a.Controller.Turns.CombatEnded += state => fired++;
+
+        a.Controller.TryAttack(a.Hero, a.Enemy, Sword);
+
+        Assert.That(a.Enemy.Creature.CurrentHP, Is.EqualTo(1));
+        Assert.That(fired, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void TheKillingBlow_RaisesCombatEndedOnce_WithHeroesWon()
+    {
+        Arena a = NewArena(14, 8);   // 8 + 3 = 11 damage against 10 HP
+        PutEnemyNextToHero(a);
+        int fired = 0;
+        CombatState last = CombatState.Ongoing;
+        a.Controller.Turns.CombatEnded += state => { fired++; last = state; };
+
+        a.Controller.TryAttack(a.Hero, a.Enemy, Sword);
+
+        Assert.That(fired, Is.EqualTo(1));
+        Assert.That(last, Is.EqualTo(CombatState.HeroesWon));
+    }
+
     //////////////////////////////////////////
     // ---------- Multiple attacks ---------- //
     //////////////////////////////////////////
