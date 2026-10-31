@@ -1,0 +1,29 @@
+Done (all tested)
+X Project setup, git, assembly definitions and test assembly
+X  Dice, IDice and FakeDice
+X Creature (ability scores, HP, AC, speed, proficiency, attacks per action)
+X AttackResolver (hit, miss, crit, damage)
+X Combatant, TurnManager (initiative, rounds, turn resources, combat end)
+X 3D Grid, GridPosition and GetMoves
+X Pathfinder and MovementRange
+X CombatController with TryMove, TryAttack and EndTurn
+X MonsterAI.TakeTurn plus tests (next up)
+X Premade stat blocks: a level 1 Fighter and the SRD Skeleton, in a small static factory
+X Attack Resolved event plus a report for UI.
+X Headless battle test: the AI plays both sides through whole fights with many seeds, to prove nothing hangs
+X CombatEnded event on TurnManager, with the “result is final” guard and the reset in StartCombat
+X Grid-to-world conversion and views linking your cube and sphere to their Combatants
+
+Core still to do (no Unity needed)
+ NONE
+
+Unity side
+ Arena builder: a script that makes a Grid, marks a few cells solid and spawns placeholder cubes to match
+ Game manager: creates the dice, creatures, grid, turn manager and controller, places everyone and starts combat
+ Click input: click a square to move, click the enemy to attack
+ Highlighting the reachable squares (from GetMovementRange)
+ Movement animation along the returned path
+ Monster turn driver: when it’s the Skeleton’s turn, run the AI with a short pause, then end the turn
+ Basic UI: HP, whose turn it is, an End Turn button and a small combat log showing the rolls
+ Victory and defeat screen (after a short delay) with a restart button
+ Camera framing, then a playtest and fix pass

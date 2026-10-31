@@ -1,0 +1,36 @@
+﻿LOFRE: Player 1
+Render Pipeline: URP (Universal Render Pipeline)
+Version: 1.0
+Rigging: Humanoid Rig
+
+1. Overview
+LOFRE: Player 1 is a stylized low-poly medieval fantasy character designed for Unity games.
+The character is suitable for playable heroes, NPCs, enemies, prototypes, RPGs, action games, and indie projects.
+
+2. Included
+Low-poly medieval character 
+Sword
+Humanoid rig
+Unity-ready FBX
+
+3. Render Pipeline
+Designed for Universal Render Pipeline (URP).
+Materials may require adjustment depending on your Unity version and project configuration.
+
+4. TROUBLESHOOTING
+
+⚠️ Model appears PINK
+
+This usually indicates a material or shader compatibility issue.
+Make sure your project is using URP and that the character materials use shaders compatible with your installed Unity/URP version.
+
+⚠️ Animation doesn't work / Character is twisted
+
+Check the FBX Rig settings and make sure the character is configured as Humanoid.
+Also verify that the correct Avatar is assigned to the Animator.
+
+⚠️ Materials or shaders look incorrect
+
+Material and shader behavior can vary between Unity and URP versions.
+If necessary, update or reassign the material using shaders compatible with your current Unity version.
+Note: Troubleshooting steps may vary depending on the Unity version and render pipeline configuration.

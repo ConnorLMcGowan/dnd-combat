@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 782c96ec287ec154b9f5a5fa67728895, type: 3}
+  m_Name: Skeleton
+  m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.CreatureDefinition
+  _displayName: Skeleton
+  _viewPrefab: {fileID: 0}
+  _strength: 10
+  _dexterity: 16
+  _constitution: 15
+  _intelligence: 6
+  _wisdom: 8
+  _charisma: 5
+  _maxHP: 13
+  _armourClass: 14
+  _speed: 30
+  _proficiencyBonus: 2
+  _attacksPerAction: 1
+  _resistances: 
+  _vulnerabilities: 01000000i
+  _immunities: 08000000i
+  _attacks:
+  - Name: Shortsword
+    AttackAbility: 0
+    DiceCount: 1
+    DiceSides: 6
+    DamageKind: 7
+    RangeSquares: 1

@@ -107,3 +107,13 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Asset Store packages (re-import them from the Package Manager on a new machine)
+/Assets/Darth_Artisan/
+/Assets/Darth_Artisan.meta
+/Assets/SazenGames/
+/Assets/SazenGames.meta
+/Assets/Standout7/
+/Assets/Standout7.meta
+/Assets/Tree_Textures/
+/Assets/Tree_Textures/meta

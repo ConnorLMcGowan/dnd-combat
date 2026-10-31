@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 782c96ec287ec154b9f5a5fa67728895, type: 3}
+  m_Name: Fighter
+  m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.CreatureDefinition
+  _displayName: Fighter
+  _viewPrefab: {fileID: 0}
+  _strength: 16
+  _dexterity: 12
+  _constitution: 14
+  _intelligence: 8
+  _wisdom: 10
+  _charisma: 10
+  _maxHP: 12
+  _armourClass: 17
+  _speed: 30
+  _proficiencyBonus: 2
+  _attacksPerAction: 1
+  _resistances: 
+  _vulnerabilities: 
+  _immunities: 
+  _attacks:
+  - Name: Flail
+    AttackAbility: 0
+    DiceCount: 1
+    DiceSides: 8
+    DamageKind: 1
+    RangeSquares: 1
+  - Name: Greatsword
+    AttackAbility: 0
+    DiceCount: 2
+    DiceSides: 6
+    DamageKind: 11
+    RangeSquares: 1
+  - Name: Longsword
+    AttackAbility: 0
+    DiceCount: 1
+    DiceSides: 8
+    DamageKind: 11
+    RangeSquares: 1
+  - Name: Halberd
+    AttackAbility: 0
+    DiceCount: 1
+    DiceSides: 10
+    DamageKind: 11
+    RangeSquares: 2
