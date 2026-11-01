@@ -2,7 +2,8 @@
     "name": "DnDCombat.Unity",
     "rootNamespace": "",
     "references": [
-        "GUID:2b856e71e8226474f930f38d53020a1b"
+        "GUID:2b856e71e8226474f930f38d53020a1b",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

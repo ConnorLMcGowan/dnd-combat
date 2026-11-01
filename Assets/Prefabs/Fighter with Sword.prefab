@@ -112,7 +112,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3322491605347736331, guid: 8f96233e2e0747045aa820cc72e690ff, type: 3}
       propertyPath: m_Name
-      value: Fighter (1) Variant
+      value: Fighter with Sword
+      objectReference: {fileID: 0}
+    - target: {fileID: 4800629359356445023, guid: 8f96233e2e0747045aa820cc72e690ff, type: 3}
+      propertyPath: m_Height
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4800629359356445023, guid: 8f96233e2e0747045aa820cc72e690ff, type: 3}
+      propertyPath: m_Radius
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 4800629359356445023, guid: 8f96233e2e0747045aa820cc72e690ff, type: 3}
+      propertyPath: m_Center.y
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

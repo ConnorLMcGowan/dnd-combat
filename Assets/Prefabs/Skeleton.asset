@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Skeleton
   m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.CreatureDefinition
   _displayName: Skeleton
-  _viewPrefab: {fileID: 0}
+  _viewPrefab: {fileID: 1977113903465803629, guid: 9192f3eb8545cb041921369eda6185ca, type: 3}
   _strength: 10
   _dexterity: 16
   _constitution: 15

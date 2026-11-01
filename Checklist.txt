@@ -13,13 +13,15 @@ X Attack Resolved event plus a report for UI.
 X Headless battle test: the AI plays both sides through whole fights with many seeds, to prove nothing hangs
 X CombatEnded event on TurnManager, with the “result is final” guard and the reset in StartCombat
 X Grid-to-world conversion and views linking your cube and sphere to their Combatants
+X Arena builder: a script that makes a Grid, marks a few cells solid and spawns placeholder cubes to match
+X Game manager: creates the dice, creatures, grid, turn manager and controller, places everyone and starts combat
+
+
 
 Core still to do (no Unity needed)
  NONE
 
 Unity side
- Arena builder: a script that makes a Grid, marks a few cells solid and spawns placeholder cubes to match
- Game manager: creates the dice, creatures, grid, turn manager and controller, places everyone and starts combat
  Click input: click a square to move, click the enemy to attack
  Highlighting the reachable squares (from GetMovementRange)
  Movement animation along the returned path
