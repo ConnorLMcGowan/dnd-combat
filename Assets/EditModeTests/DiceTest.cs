@@ -41,10 +41,28 @@ public class DiceTest
         Creature fighter = new Creature("Fighter", strength: 16);
         Creature target = new Creature("Target", maxHP: 30, armourClass: 30);   // AC far too high to hit normally
         AttackResolver resolver = new AttackResolver(dice);
+        int strMod = fighter.GetModifier(Ability.Strength);   // 16 Strength gives +3
 
-        
+        // +5 to hit, 1d8 damage plus the Strength modifier
+        AttackResult result = resolver.Resolve(fighter, target, 5, 1, 8, strMod, DamageType.Slashing);
 
-        // resolve an attack: +5 to hit, 1d8 damage plus the Strength modifier
-        // assert: it hit despite the AC, IsCrit is true, and the damage is what you expect
+        // It hit despite the AC: 20 + 5 = 25 is still under AC 30
+        Assert.That(result.D20Roll, Is.EqualTo(20));
+        Assert.That(result.AttackTotal, Is.EqualTo(25));
+        Assert.That(result.Hit, Is.True);
+        Assert.That(result.IsCrit, Is.True);
+
+        // A crit doubles the dice, not the bonus: 1d8 becomes 2d8
+        Assert.That(dice.LastRollCount, Is.EqualTo(2));
+        Assert.That(dice.LastRollSides, Is.EqualTo(8));
+
+        // Damage: the dice total 9, plus the +3 bonus once = 12
+        Assert.That(result.RolledDamage, Is.EqualTo(12));
+        Assert.That(result.Damage, Is.EqualTo(12));
+        Assert.That(result.Effect, Is.EqualTo(DamageEffect.Normal));
+        Assert.That(target.CurrentHP, Is.EqualTo(18));   // 30 - 12
+
+        // Both rolls were used, and no others
+        Assert.That(dice.Remaining, Is.EqualTo(0));
     }
 }
