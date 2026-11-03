@@ -15,14 +15,12 @@ X CombatEnded event on TurnManager, with the “result is final” guard and the
 X Grid-to-world conversion and views linking your cube and sphere to their Combatants
 X Arena builder: a script that makes a Grid, marks a few cells solid and spawns placeholder cubes to match
 X Game manager: creates the dice, creatures, grid, turn manager and controller, places everyone and starts combat
-
-
+X Click input: click a square to move, click the enemy to attack
 
 Core still to do (no Unity needed)
  NONE
 
 Unity side
- Click input: click a square to move, click the enemy to attack
  Highlighting the reachable squares (from GetMovementRange)
  Movement animation along the returned path
  Monster turn driver: when it’s the Skeleton’s turn, run the AI with a short pause, then end the turn

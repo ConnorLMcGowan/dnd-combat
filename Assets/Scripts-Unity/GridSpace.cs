@@ -32,5 +32,21 @@ namespace DnDCombat.Unity
             int z = Mathf.FloorToInt(local.z / CellSize);
             return new GridPosition(x, y, z);
         }
+        public Vector3 ToWorldFloorCentre(GridPosition position)
+        {
+            return ToWorld(position) - Vector3.up * (CellSize / 2f);
+        }
+        public Vector3 ToWorldCorner(GridPosition position)
+        {
+            float x = Origin.x + position.X * CellSize;
+            float y = Origin.y + position.Y * CellSize;
+            float z = Origin.z + position.Z * CellSize;
+
+            return new Vector3(x, y, z);
+        }
+        public GridPosition ToGridOnSurface(Vector3 hitPoint, Vector3 hitNormal)
+        {
+            return ToGrid(hitPoint + hitNormal * (CellSize * 0.01f));
+        }
     }
 }

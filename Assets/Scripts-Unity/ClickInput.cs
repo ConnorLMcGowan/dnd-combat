@@ -1,8 +1,6 @@
 using DnDCombat.Core;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.XR;
 
 namespace DnDCombat.Unity
 {
@@ -51,8 +49,6 @@ namespace DnDCombat.Unity
             }
             if (!ClickedThisFrame())
                 return;
-
-            Debug.Log("Clicked at " + MouseScreenPosition());
             Ray ray = _camera.ScreenPointToRay(MouseScreenPosition());
             if (!Physics.Raycast(ray, out RaycastHit hit))
                 return;
@@ -96,32 +92,22 @@ namespace DnDCombat.Unity
         }
         private void ApproachAndAttack(Combatant actor, Combatant target, AttackProfile attack)
         {
-            _game.Controller.Grid.TryGetPosition(target, out GridPosition targetPos); // Get the target's position on the grid
-
-            if (targetPos == null) // Check if the target position is null
+            if(!_game.Controller.Grid.TryGetPosition(target, out GridPosition targetPos))
             {
-                Debug.Log("ERROR 1: Target position is null");
                 return;
             }
 
             MovementRange range = _game.Controller.GetMovementRange(actor); // Get the movement range of the actor
-            _game.Controller.Grid.TryGetPosition(actor, out GridPosition actorPos); // Get the actor's position on the grid
 
-            GridPosition best = actorPos;
-            foreach (GridPosition square in range.Destinations)
-            {
-                if (IsBetter(square, best, targetPos, attack.RangeSquares, range))
-                {
-                    best = square;
-                }
-            }
+            GridPosition best = range.BestApproach(targetPos, attack.RangeSquares);
+
             if (Core.Grid.DistanceInSquares(best, targetPos) > attack.RangeSquares)
             {
                 Debug.Log($"{target.Creature.Name} can't be reached this turn.");
                 return;
             }
 
-            // 2. Walk there, and put the body there too
+            // Walk there, and put the body there too
             MoveResult move = _game.Controller.TryMove(actor, best);
             if (!move.Success)
             {
@@ -130,56 +116,13 @@ namespace DnDCombat.Unity
             }
             _game.ViewOf(actor).SnapToGrid();
 
-            // 3. Attack from there
+            // Attack from there
             AttackOutcome after = _game.Controller.TryAttack(actor, target, attack);
             if (!after.Success)
             {
                 Debug.Log("ERROR 3: " + after.Failure);
             }
-        }
-
-        private static bool IsBetter(GridPosition a, GridPosition b, GridPosition targetPosition,
-                                     int reach, MovementRange range)
-        {
-            bool aInReach = Core.Grid.DistanceInSquares(a, targetPosition) <= reach;
-            bool bInReach = Core.Grid.DistanceInSquares(b, targetPosition) <= reach;
-
-            if (aInReach && !bInReach)
-            {
-                return true; // a is in range and b is not
-            }
-            if (!aInReach && bInReach)
-            {
-                return false; // b is in range and a is not
-            }
-            if (!aInReach)
-            {
-                int aDistance = Core.Grid.DistanceInSquares(a, targetPosition);
-                int bDistance = Core.Grid.DistanceInSquares(b, targetPosition);
-
-                if (aDistance < bDistance) { return true; }
-                if (aDistance > bDistance) { return false; }
-            }
-
-            int aSteps = range.StepsTo(a);
-            int bSteps = range.StepsTo(b);
-
-            if (aSteps < bSteps)
-            {
-                return true;     // a is cheaper to reach
-            }
-            if (aSteps > bSteps)
-            {
-                return false;    // a is harder to reach
-            }
-
-            if (a.X < b.X) { return true; }
-            if (a.X > b.X) { return false; }
-            if (a.Z < b.Z) { return true; }
-            if (a.Z > b.Z) { return false; }
-
-            return false;
-        }
+        }       
         private void ClickGround(Combatant actor, RaycastHit hit)
         {
             GridPosition cell = _game.Space.ToGrid(hit.point);

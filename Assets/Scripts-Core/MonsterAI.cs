@@ -70,14 +70,7 @@ namespace DnDCombat.Core
 
             MovementRange range = controller.GetMovementRange(monster);
 
-            GridPosition best = monsterPosition;
-            foreach (GridPosition square in range.Destinations)
-            {
-                if (IsBetter(square, best, targetPosition, attack.RangeSquares, range))
-                {
-                    best = square;
-                }
-            }
+            GridPosition best = range.BestApproach(targetPosition, attack.RangeSquares);
 
             if (best != monsterPosition)
             {
@@ -147,49 +140,6 @@ namespace DnDCombat.Core
                 AttackOutcome outcome = controller.TryAttack(monster, target, attack);
                 if (!outcome.Success) { break; }
             }
-        }
-
-        private static bool IsBetter(GridPosition a, GridPosition b, GridPosition targetPosition,
-                                     int reach, MovementRange range)
-        {
-            bool aInReach = Grid.DistanceInSquares(a, targetPosition) <= reach;
-            bool bInReach = Grid.DistanceInSquares(b, targetPosition) <= reach;
-
-            if (aInReach && !bInReach)
-            {
-                return true; // a is in range and b is not
-            }
-            if(!aInReach && bInReach)
-            {
-                return false; // b is in range and a is not
-            }
-            if (!aInReach)
-            {
-                int aDistance = Grid.DistanceInSquares(a, targetPosition);
-                int bDistance = Grid.DistanceInSquares(b, targetPosition);
-
-                if (aDistance < bDistance) { return true; }
-                if (aDistance > bDistance) { return false; }
-            }
-
-            int aSteps = range.StepsTo(a);
-            int bSteps = range.StepsTo(b);
-
-            if (aSteps < bSteps)
-            {
-                return true;     // a is cheaper to reach
-            }
-            if (aSteps > bSteps)
-            {
-                return false;    // a is harder to reach
-            }
-
-            if (a.X < b.X) { return true; }
-            if (a.X > b.X) { return false; }
-            if (a.Z < b.Z) { return true; }
-            if (a.Z > b.Z) { return false; }
-
-            return false;
-        }
+        }        
     }
 }

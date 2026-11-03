@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using DnDCombat.Core;
@@ -312,5 +313,157 @@ public class MovementTest
         Assert.That(range.PathTo(P(14, 0, 14)), Is.Empty);
         Assert.That(range.PathTo(P(0, 0, 0)), Is.Empty);
         Assert.That(range.StepsTo(P(14, 0, 14)), Is.EqualTo(-1));
+    }
+
+    //////////////////////////////////////////
+    // ---------- Straight paths ---------- //
+    //////////////////////////////////////////
+
+    // How many steps along the route change both X and Z
+    private static int DiagonalSteps(GridPosition start, List<GridPosition> path)
+    {
+        int count = 0;
+        GridPosition previous = start;
+        foreach (GridPosition square in path)
+        {
+            if (square.X != previous.X && square.Z != previous.Z) count++;
+            previous = square;
+        }
+        return count;
+    }
+
+    [Test]
+    public void PathTo_StraightLine_HasNoDiagonals()
+    {
+        Grid grid = new Grid(9, 3, 9);
+        Combatant mover = Make();
+        grid.Place(mover, P(4, 0, 1));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        var path = range.PathTo(P(4, 0, 4));
+
+        Assert.That(path, Is.EqualTo(new[] { P(4, 0, 2), P(4, 0, 3), P(4, 0, 4) }));
+    }
+
+    [Test]
+    public void PathTo_StraightLineSideways_HasNoDiagonals()
+    {
+        // Same again along X, so the fix isn't only working in one direction
+        Grid grid = new Grid(9, 3, 9);
+        Combatant mover = Make();
+        grid.Place(mover, P(1, 0, 4));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        var path = range.PathTo(P(5, 0, 4));
+
+        Assert.That(path, Is.EqualTo(new[] { P(2, 0, 4), P(3, 0, 4), P(4, 0, 4), P(5, 0, 4) }));
+    }
+
+    [Test]
+    public void PathTo_SlightlyOffLine_UsesOnlyOneDiagonal()
+    {
+        // 3 squares forward and 1 across needs exactly one diagonal. A zig-zag could use three.
+        Grid grid = new Grid(9, 3, 9);
+        Combatant mover = Make();
+        grid.Place(mover, P(4, 0, 1));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        var path = range.PathTo(P(5, 0, 4));
+
+        Assert.That(path.Count, Is.EqualTo(3));
+        Assert.That(DiagonalSteps(P(4, 0, 1), path), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void StraightPaths_DoNotChangeStepCounts()
+    {
+        // The tie-break only picks between equally short routes, so the numbers stay the same
+        Grid grid = new Grid(15, 2, 15);
+        Combatant mover = Make();
+        grid.Place(mover, P(0, 0, 0));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        Assert.That(range.StepsTo(P(0, 0, 6)), Is.EqualTo(6));
+        Assert.That(range.StepsTo(P(6, 0, 6)), Is.EqualTo(6));
+        Assert.That(range.StepsTo(P(6, 0, 3)), Is.EqualTo(6));
+        Assert.That(range.PathTo(P(6, 0, 3)).Count, Is.EqualTo(6));
+    }
+
+    ////////////////////////////////////////
+    // ---------- BestApproach ---------- //
+    ////////////////////////////////////////
+
+    [Test]
+    public void BestApproach_AlreadyInReach_StaysPut()
+    {
+        Grid grid = new Grid(9, 3, 9);
+        Combatant mover = Make();
+        grid.Place(mover, P(4, 0, 4));
+        grid.Place(Make("Target"), P(5, 0, 4));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        Assert.That(range.BestApproach(P(5, 0, 4), 1), Is.EqualTo(P(4, 0, 4)));
+    }
+
+    [Test]
+    public void BestApproach_InRangeThisTurn_StopsAsSoonAsItCanStrike()
+    {
+        // Target 4 squares away: 3 steps puts it alongside, so it shouldn't walk any further
+        Grid grid = new Grid(15, 2, 15);
+        Combatant mover = Make();
+        grid.Place(mover, P(2, 0, 7));
+        grid.Place(Make("Target"), P(6, 0, 7));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        GridPosition best = range.BestApproach(P(6, 0, 7), 1);
+
+        Assert.That(best, Is.EqualTo(P(5, 0, 7)));
+        Assert.That(range.StepsTo(best), Is.EqualTo(3));
+    }
+
+    [Test]
+    public void BestApproach_TooFar_GetsAsCloseAsPossible_InAStraightLine()
+    {
+        // 6 squares of movement, target 14 away. Every square at x = 6 is 8 away (Chebyshev)
+        // and 6 steps to walk, so the straight-line tie-break picks the one level with the target.
+        Grid grid = new Grid(15, 2, 15);
+        Combatant mover = Make();
+        grid.Place(mover, P(0, 0, 7));
+        grid.Place(Make("Target"), P(14, 0, 7));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 30);
+
+        GridPosition best = range.BestApproach(P(14, 0, 7), 1);
+
+        Assert.That(best, Is.EqualTo(P(6, 0, 7)));
+        Assert.That(Grid.DistanceInSquares(best, P(14, 0, 7)), Is.GreaterThan(1));
+    }
+
+    [Test]
+    public void BestApproach_WallInTheWay_GoesThroughTheGap()
+    {
+        Grid grid = new Grid(9, 3, 3);
+        for (int z = 0; z < 3; z++) Pillar(grid, 4, z, 2);
+        grid.SetSolid(P(4, 0, 1), false);
+        grid.SetSolid(P(4, 1, 1), false);
+        Combatant mover = Make();
+        grid.Place(mover, P(0, 0, 1));
+        grid.Place(Make("Target"), P(6, 0, 1));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 100);
+
+        GridPosition best = range.BestApproach(P(6, 0, 1), 1);
+
+        Assert.That(best, Is.EqualTo(P(5, 0, 1)));
+        Assert.That(range.PathTo(best).Contains(P(4, 0, 1)), Is.True);
+    }
+
+    [Test]
+    public void BestApproach_CannotMove_ReturnsTheStartSquare()
+    {
+        Grid grid = new Grid(15, 2, 15);
+        Combatant mover = Make();
+        grid.Place(mover, P(0, 0, 7));
+        MovementRange range = Pathfinder.FindReachable(grid, mover, 0);
+
+        Assert.That(range.BestApproach(P(14, 0, 7), 1), Is.EqualTo(P(0, 0, 7)));
     }
 }

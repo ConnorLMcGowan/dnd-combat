@@ -551,11 +551,11 @@ public class MonsterAITest
     }
 
     [Test]
-    public void TiedSquares_ResolveToTheLowestXThenLowestZ()
+    public void TiedSquares_PreferTheSquaresStraightInFrontOfTheTarget()
     {
         // Several squares are equally close and equally far to walk to: x = 9 with z from 5 to 9.
-        // The final tie-break picks the lowest Z.
-        Assert.That(RunTheFarHeroScenario(), Is.EqualTo(P(9, 0, 5)));
+        // The final tie-break finds the square straight in front of the target to avoid creating zig-zagging paths.
+        Assert.That(RunTheFarHeroScenario(), Is.EqualTo(P(9, 0, 7)));
     }
 
     [Test]
