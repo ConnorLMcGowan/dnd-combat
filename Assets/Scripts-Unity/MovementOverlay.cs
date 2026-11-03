@@ -8,6 +8,7 @@ namespace DnDCombat.Unity
     public class MovementOverlay : MonoBehaviour
     {
         [SerializeField] private GameManager _game;
+        [SerializeField] private BodyDirector _director;
         [SerializeField] private Material _lineMaterial;
         [SerializeField] private Color _outlineColor = Color.white;
         [SerializeField] private Color _gridColor = new Color(1f, 1f, 1f, 0.25f);
@@ -87,6 +88,8 @@ namespace DnDCombat.Unity
             cell = default;
             squares = 0;
 
+            if(_director != null && _director.IsBusy)
+                return false;
             if (_game == null || _game.Controller == null || _game.Space == null)
             {
                 return false;
@@ -347,4 +350,4 @@ namespace DnDCombat.Unity
             return new Color(_outlineColor.r, _outlineColor.g, _outlineColor.b, _outlineColor.a * _innerFeatherAlpha * fade);
         }
     }
-}
+}

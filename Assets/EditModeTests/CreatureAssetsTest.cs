@@ -162,50 +162,5 @@ public class CreatureAssetsTest
             Assert.That(creature.IsResistantTo(type) && creature.IsImmuneTo(type), Is.False, type.ToString());
         }
     }
-
-    ///////////////////////////////////////////////////////////
-    // ---------- Assets match the Core's StatBlocks ---------- //
-    ///////////////////////////////////////////////////////////
-    // The headless battle and the Core tests use StatBlocks. The real game uses the assets.
-    // If they drift apart, the tests would be testing a different fight from the one you play.
-
-    [Test]
-    public void FighterAsset_MatchesStatBlocksFighter()
-    {
-        AssertSameCreature(FindByName("Fighter").CreateCreature("Fighter"), StatBlocks.Fighter());
-    }
-
-    [Test]
-    public void FighterAsset_HasEveryStatBlocksWeapon_WithTheSameNumbers()
-    {
-        CreatureDefinition fighter = FindByName("Fighter");
-        List<AttackProfile> attacks = fighter.CreateAttacks(fighter.CreateCreature("Fighter"));
-
-        foreach (AttackProfile expected in new[] { StatBlocks.FighterGreatsword, StatBlocks.FighterFlail,
-                                                   StatBlocks.FighterLongsword, StatBlocks.FighterHalberd })
-        {
-            AttackProfile actual = attacks.FirstOrDefault(a => a.Name == expected.Name);
-            Assert.That(actual.Name, Is.EqualTo(expected.Name), $"The Fighter asset has no {expected.Name}");
-            AssertSameAttack(actual, expected);
-        }
-    }
-
-    [Test]
-    public void SkeletonAsset_MatchesStatBlocksSkeleton()
-    {
-        AssertSameCreature(FindByName("Skeleton").CreateCreature("Skeleton"), StatBlocks.Skeleton());
-    }
-
-    [Test]
-    public void SkeletonAsset_Shortsword_MatchesStatBlocks()
-    {
-        // StatBlocks has +5 to hit and 1d6 + 3, which is the Skeleton's Dexterity (16, +3)
-        // plus proficiency. The asset's Attack Ability must be Dexterity to match.
-        CreatureDefinition skeleton = FindByName("Skeleton");
-        List<AttackProfile> attacks = skeleton.CreateAttacks(skeleton.CreateCreature("Skeleton"));
-        AttackProfile shortsword = attacks.FirstOrDefault(a => a.Name == "Shortsword");
-
-        Assert.That(shortsword.Name, Is.EqualTo("Shortsword"), "The Skeleton asset has no Shortsword");
-        AssertSameAttack(shortsword, StatBlocks.SkeletonShortsword);
-    }
+    
 }

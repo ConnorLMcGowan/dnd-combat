@@ -62,8 +62,10 @@ public class CombatantViewTest
     ////////////////////////////////////////
 
     [Test]
-    public void SnapToGrid_PutsTheViewAtTheCentreOfItsCell()
+    public void SnapToGrid_PutsTheViewOnTheMiddleOfItsCellsFloor()
     {
+        // Models have their pivot at their feet, so the body goes on the floor (y = 0),
+        // not the middle of the cell (y = 0.5), or it floats
         Grid grid = new Grid(5, 2, 5);
         Combatant fighter = MakeFighter();
         grid.Place(fighter, P(2, 0, 3));
@@ -73,7 +75,23 @@ public class CombatantViewTest
         bool snapped = view.SnapToGrid();
 
         Assert.That(snapped, Is.True);
-        Assert.That(view.transform.position, Is.EqualTo(new Vector3(2.5f, 0.5f, 3.5f)).Using(Near));
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(2.5f, 0f, 3.5f)).Using(Near));
+    }
+
+    [Test]
+    public void SnapToGrid_StandingOnABlock_PutsTheFeetOnTopOfIt()
+    {
+        // A block fills (2, 0, 3), so its top is y = 1, and that's where the feet go
+        Grid grid = new Grid(5, 3, 5);
+        grid.SetSolid(P(2, 0, 3), true);
+        Combatant fighter = MakeFighter();
+        grid.Place(fighter, P(2, 1, 3));
+        CombatantView view = MakeView();
+        view.Bind(fighter, grid, new GridSpace(Vector3.zero, 1f));
+
+        view.SnapToGrid();
+
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(2.5f, 1f, 3.5f)).Using(Near));
     }
 
     [Test]
@@ -88,7 +106,7 @@ public class CombatantViewTest
 
         view.SnapToGrid();
 
-        Assert.That(view.transform.position, Is.EqualTo(new Vector3(0f, 0.5f, 0f)).Using(Near));
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(0f, 0f, 0f)).Using(Near));
     }
 
     [Test]
@@ -102,7 +120,7 @@ public class CombatantViewTest
 
         view.SnapToGrid();
 
-        Assert.That(view.transform.position, Is.EqualTo(new Vector3(3f, 1f, 3f)).Using(Near));   // (1 + 0.5) * 2
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(3f, 0f, 3f)).Using(Near));   // (1 + 0.5) * 2 across, floor at 0
     }
 
     [Test]
@@ -114,12 +132,12 @@ public class CombatantViewTest
         CombatantView view = MakeView();
         view.Bind(fighter, grid, new GridSpace(Vector3.zero, 1f));
         view.SnapToGrid();
-        Assert.That(view.transform.position, Is.EqualTo(new Vector3(1.5f, 0.5f, 1.5f)).Using(Near));
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(1.5f, 0f, 1.5f)).Using(Near));
 
         grid.MoveTo(fighter, P(3, 0, 2));
         view.SnapToGrid();
 
-        Assert.That(view.transform.position, Is.EqualTo(new Vector3(3.5f, 0.5f, 2.5f)).Using(Near));
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(3.5f, 0f, 2.5f)).Using(Near));
     }
 
     ///////////////////////////////////////////
@@ -178,6 +196,91 @@ public class CombatantViewTest
         bool snapped = view.SnapToGrid();
 
         Assert.That(snapped, Is.False);
-        Assert.That(view.transform.position, Is.EqualTo(new Vector3(2.5f, 0.5f, 2.5f)).Using(Near));
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(2.5f, 0f, 2.5f)).Using(Near));
+    }
+
+    ////////////////////////////////////
+    // ---------- Facing ---------- //
+    ////////////////////////////////////
+    // The body's front is +Z (transform.forward), so these check where forward points
+
+    [Test]
+    public void FaceTowards_PointsTheFrontAtThePoint()
+    {
+        CombatantView view = MakeView();
+        view.transform.position = new Vector3(1f, 0f, 1f);
+
+        view.FaceTowards(new Vector3(6f, 0f, 1f));
+
+        Assert.That(view.transform.forward, Is.EqualTo(Vector3.right).Using(Near));
+    }
+
+    [Test]
+    public void FaceTowards_WorksInEveryDirection()
+    {
+        CombatantView view = MakeView();
+
+        view.FaceTowards(new Vector3(0f, 0f, -3f));
+        Assert.That(view.transform.forward, Is.EqualTo(Vector3.back).Using(Near));
+
+        view.FaceTowards(new Vector3(-2f, 0f, 2f));
+        Assert.That(view.transform.forward, Is.EqualTo(new Vector3(-1f, 0f, 1f).normalized).Using(Near));
+    }
+
+    [Test]
+    public void FaceTowards_APointHigherUp_TurnsButNeverTilts()
+    {
+        // A creature on a block looking at one below shouldn't lean over
+        CombatantView view = MakeView();
+        view.transform.position = new Vector3(0f, 1f, 0f);
+
+        view.FaceTowards(new Vector3(4f, -3f, 0f));
+
+        Assert.That(view.transform.forward, Is.EqualTo(Vector3.right).Using(Near));
+        Assert.That(view.transform.up, Is.EqualTo(Vector3.up).Using(Near));
+    }
+
+    [Test]
+    public void FaceTowards_ItsOwnPosition_LeavesTheFacingAlone()
+    {
+        CombatantView view = MakeView();
+        view.FaceTowards(new Vector3(0f, 0f, -5f));
+
+        view.FaceTowards(view.transform.position);
+        view.FaceTowards(view.transform.position + Vector3.up * 3f);    // straight above: no sideways direction
+
+        Assert.That(view.transform.forward, Is.EqualTo(Vector3.back).Using(Near));
+    }
+
+    [Test]
+    public void FaceDirection_IgnoresLengthAndHeight()
+    {
+        CombatantView view = MakeView();
+
+        view.FaceDirection(new Vector3(0f, 7f, 0.1f));
+
+        Assert.That(view.transform.forward, Is.EqualTo(Vector3.forward).Using(Near));
+    }
+
+    [Test]
+    public void FaceDirection_Zero_LeavesTheFacingAlone()
+    {
+        CombatantView view = MakeView();
+        view.FaceDirection(Vector3.left);
+
+        view.FaceDirection(Vector3.zero);
+
+        Assert.That(view.transform.forward, Is.EqualTo(Vector3.left).Using(Near));
+    }
+
+    [Test]
+    public void Facing_DoesNotMoveTheBody()
+    {
+        CombatantView view = MakeView();
+        view.transform.position = new Vector3(3f, 0f, 4f);
+
+        view.FaceTowards(new Vector3(9f, 0f, 9f));
+
+        Assert.That(view.transform.position, Is.EqualTo(new Vector3(3f, 0f, 4f)).Using(Near));
     }
 }

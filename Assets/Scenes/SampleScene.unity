@@ -119,6 +119,56 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &66122714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 66122716}
+  - component: {fileID: 66122715}
+  m_Layer: 0
+  m_Name: BodyDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &66122715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66122714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: febb51ae514d25b4895281d38b596378, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.BodyDirector
+  _game: {fileID: 1617551212}
+  _moveSpeed: 4
+  _turnSpeed: 720
+  _attackHitTime: 0.35
+  _attackRecoverTime: 0.5
+  _instant: 0
+--- !u!4 &66122716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 66122714}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.6129, y: 2.92979, z: 3.70325}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &246147750
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,12 +199,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.MovementOverlay
   _game: {fileID: 1617551212}
+  _director: {fileID: 66122715}
   _lineMaterial: {fileID: 2100000, guid: 40da312e877d0ef4faedda8ba5461766, type: 2}
   _outlineColor: {r: 1, g: 1, b: 1, a: 1}
   _gridColor: {r: 1, g: 1, b: 1, a: 0.25}
   _outlineWidth: 0.1
   _gridWidth: 0.03
   _heightAboveFloor: 0.03
+  _brightness: 1.5
+  _coreWidth: 0.2
+  _widthScale: 1
+  _gridWidthScale: 5
+  _innerFeatherLength: 0.6
+  _innerFeatherAlpha: 0.3
 --- !u!4 &246147752
 Transform:
   m_ObjectHideFlags: 0
@@ -466,10 +523,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.PathPreview
   _game: {fileID: 1617551212}
   _camera: {fileID: 330585545}
+  _director: {fileID: 66122715}
   _lineMaterial: {fileID: 2100000, guid: 40da312e877d0ef4faedda8ba5461766, type: 2}
   _color: {r: 1, g: 1, b: 1, a: 1}
   _width: 1
   _heightAboveFloor: 0.06
+  _lineBrightness: 1.5
+  _lineCoreWidth: 0.2
+  _lineWidthScale: 2.5
+  _lineStartAlpha: 0.3
+  _glowColour: {r: 1, g: 0.9, b: 0.3, a: 0.5}
+  _glowBrightness: 2
+  _glowSize: 0.9
+  _glowCore: 0
+  _glowHeight: 0.045
+  _glowPulseSpeed: 0.5
+  _glowPulseDepth: 0.35
 --- !u!120 &413873603
 LineRenderer:
   serializedVersion: 3
@@ -673,20 +742,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65b098021e48a774cb8c4e44a682aa55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.ArenaBuilder
-  _width: 15
+  _width: 25
   _height: 3
-  _depth: 15
+  _depth: 20
   _cellSize: 1
   _blocks:
-  - Cell: {x: 7, y: 0, z: 7}
+  - Cell: {x: 12, y: 0, z: 12}
     Prefab: {fileID: 0}
     Scale: 0
     DecorationOnly: 0
-  - Cell: {x: 5, y: 0, z: 4}
+  - Cell: {x: 20, y: 0, z: 16}
     Prefab: {fileID: 0}
     Scale: 0
     DecorationOnly: 0
-  - Cell: {x: 9, y: 0, z: 10}
+  - Cell: {x: 23, y: 0, z: 4}
     Prefab: {fileID: 0}
     Scale: 0
     DecorationOnly: 0
@@ -726,6 +795,7 @@ GameObject:
   - component: {fileID: 1617551211}
   - component: {fileID: 1617551212}
   - component: {fileID: 1617551213}
+  - component: {fileID: 1617551214}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -765,11 +835,11 @@ MonoBehaviour:
   _spawns:
   - Definition: {fileID: 11400000, guid: 186ddfa6325546c4581dde8417521c72, type: 2}
     Team: 0
-    Cell: {x: 5, y: 0, z: 7}
+    Cell: {x: 5, y: 0, z: 14}
     Name: Fighter
   - Definition: {fileID: 11400000, guid: 3c3b026ee07f3cd4da92327633977b86, type: 2}
     Team: 1
-    Cell: {x: 9, y: 0, z: 7}
+    Cell: {x: 20, y: 0, z: 14}
     Name: Skeleton
 --- !u!114 &1617551213
 MonoBehaviour:
@@ -784,7 +854,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.ClickInput
   _game: {fileID: 1617551212}
+  _director: {fileID: 0}
   _camera: {fileID: 330585545}
+--- !u!114 &1617551214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1617551210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 373c4f2cbac13a04cb1abc371e8940a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.MonsterTurnDriver
+  _game: {fileID: 1617551212}
+  _thinkDelay: 0.5
+  _afterDelay: 0.6
+  _director: {fileID: 66122715}
 --- !u!1 &1762964111
 GameObject:
   m_ObjectHideFlags: 0
@@ -1034,3 +1121,4 @@ SceneRoots:
   - {fileID: 1824450491864248968}
   - {fileID: 246147752}
   - {fileID: 413873604}
+  - {fileID: 66122716}

@@ -43,6 +43,7 @@ namespace DnDCombat.Core
         public Grid Grid { get; }
         private readonly AttackResolver _resolver;
         public event Action<AttackReport> AttackResolved;
+        public event Action<MoveReport> Moved;        // after every successful move, once the movement is spent
 
         public CombatController(TurnManager turns, Grid grid, AttackResolver resolver)
         {
@@ -188,6 +189,9 @@ namespace DnDCombat.Core
             // spend the movement here
             mover.MovementRemaining = mover.MovementRemaining - cost;
 
+            // announce the move, so the scene can show it
+            Moved?.Invoke(new MoveReport(mover, position, path, cost));
+
             // return the success result here
             return new MoveResult(true, MoveFailure.None, path, cost);
 
@@ -206,4 +210,4 @@ namespace DnDCombat.Core
 
         }
     }
-}
+}

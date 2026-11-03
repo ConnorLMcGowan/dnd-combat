@@ -7,6 +7,7 @@ namespace DnDCombat.Unity
     public class ClickInput : MonoBehaviour
     {
         [SerializeField] private GameManager _game;
+        [SerializeField] private BodyDirector _director;
         [SerializeField] private Camera _camera;       // empty uses the Main Camera
 
         private void Start()
@@ -35,7 +36,9 @@ namespace DnDCombat.Unity
 
         private void Update()
         {
-            if(_game == null || _game.Controller == null)
+            if(_director != null && _director.IsBusy)
+                return;
+            if (_game == null || _game.Controller == null)
                 return;
             Combatant actor = _game.Controller.Turns.Current;
             if (actor == null)
@@ -107,14 +110,13 @@ namespace DnDCombat.Unity
                 return;
             }
 
-            // Walk there, and put the body there too
+            // Walk there (the BodyDirector moves the body when it hears about the move)
             MoveResult move = _game.Controller.TryMove(actor, best);
             if (!move.Success)
             {
                 Debug.Log("ERROR 2: " + move.Failure);
                 return;
             }
-            _game.ViewOf(actor).SnapToGrid();
 
             // Attack from there
             AttackOutcome after = _game.Controller.TryAttack(actor, target, attack);
@@ -127,15 +129,11 @@ namespace DnDCombat.Unity
         {
             GridPosition cell = _game.Space.ToGrid(hit.point);
 
+            // The BodyDirector moves the body when it hears about the move
             MoveResult tryMove = _game.Controller.TryMove(actor, cell);
             if (tryMove.Failure != MoveFailure.None)
             {
                 Debug.Log("ERROR: " + tryMove.Failure);
-                return;
-            }
-            else if (tryMove.Success == true)
-            {
-                _game.ViewOf(actor).SnapToGrid();
             }
         }
 

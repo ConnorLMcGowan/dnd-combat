@@ -1,6 +1,13 @@
 namespace DnDCombat.Core
 {
     // A snapshot of one attack, taken the moment it landed, so the UI can play it back later
+    // TODO(guide): UI 2. The log needs to say WHAT was used ("with Flail") and the damage type
+    //   ("7 bludgeoning"), and neither is in here yet. Both live in the AttackProfile.
+    //   a. Add a property:  public AttackProfile Attack { get; }
+    //   b. Add an AttackProfile attack parameter to the constructor, straight after target,
+    //      and store it.
+    //   c. In CombatController.TryAttack (step 4, "Announce the attack"), pass attack in that spot.
+    //   Checkpoint: compiles (that's the only place a report is made), every test still passes.
     public readonly struct AttackReport
     {
         public Combatant Attacker { get; }
@@ -19,4 +26,4 @@ namespace DnDCombat.Core
             TargetDefeated = targetDefeated;
         }
     }
-}
+}

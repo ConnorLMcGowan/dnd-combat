@@ -18,6 +18,7 @@ namespace DnDCombat.Unity
     {
         [SerializeField] private GameManager _game;
         [SerializeField] private Camera _camera;               // empty uses the Main Camera
+        [SerializeField] private BodyDirector _director;
         [SerializeField] private Material _lineMaterial;
         [SerializeField] private Color _color = new Color(1f, 0.9f, 0.2f, 0.5f);
         [SerializeField] private float _width = 0.12f;
@@ -151,6 +152,8 @@ namespace DnDCombat.Unity
             hover = default;
             enemy = null;
 
+            if(_director != null && _director.IsBusy)
+                return false;
             if (_game == null || _game.Controller == null || _game.Space == null || _camera == null)
                 return false;
 

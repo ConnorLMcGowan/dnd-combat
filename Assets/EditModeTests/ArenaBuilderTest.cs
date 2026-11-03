@@ -151,7 +151,7 @@ public class ArenaBuilderTest
 
         arena.Build();
 
-        Assert.That(Child(arena, "Floor").GetComponent<Collider>(), Is.Not.Null);
+        Assert.That(Child(arena, "Floor").GetComponent<Collider>() != null, Is.True);
     }
 
     [Test]
@@ -206,7 +206,7 @@ public class ArenaBuilderTest
         Bounds bounds = cube.GetComponent<Renderer>().bounds;
         Assert.That(bounds.size, Is.EqualTo(Vector3.one).Using(Near));
         Assert.That(bounds.center, Is.EqualTo(arena.Space.ToWorld(P(4, 0, 6))).Using(Near));
-        Assert.That(cube.GetComponent<Collider>(), Is.Not.Null, "Without a collider, clicks go straight through blocks");
+        Assert.That(cube.GetComponent<Collider>() != null, Is.True, "Without a collider, clicks go straight through blocks");
     }
 
     [Test]

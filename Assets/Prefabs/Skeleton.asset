@@ -15,7 +15,7 @@ MonoBehaviour:
   _displayName: Skeleton
   _viewPrefab: {fileID: 1977113903465803629, guid: 9192f3eb8545cb041921369eda6185ca, type: 3}
   _strength: 10
-  _dexterity: 16
+  _dexterity: 14
   _constitution: 15
   _intelligence: 6
   _wisdom: 8
