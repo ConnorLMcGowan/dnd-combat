@@ -60,39 +60,7 @@ namespace DnDCombat.Unity
 
         // True while anything is still being shown. Other scripts wait until this is false.
         public bool IsBusy => _running || _jobs.Count > 0;
-
-        // TODO(guide): UI 4. An event for the moment an attack is SEEN to land.
-        //
-        //   Why: the Core resolves an attack instantly, but the swing plays up to a second later.
-        //   If the HP bars and the log listened to the Core, the Skeleton's HP would drop before
-        //   the Fighter even raised his sword. So they'll listen to this instead.
-        //
-        //   a. Add here:  public event Action<AttackReport> AttackLanded;
-        //
-        //   b. It must fire exactly ONCE per attack, but from two places: at the moment of impact
-        //      in the Attack coroutine, and in Finish (for Instant mode, where Play never runs).
-        //      Your RunJobs calls Finish after Play too, so without care it would fire twice.
-        //      The tidy way is a small "land once" method made inside MakeAttackJob:
-        //
-        //        bool landed = false;
-        //        Action land = () =>
-        //        {
-        //            if (landed) return;          // already announced: do nothing
-        //            landed = true;
-        //            AttackLanded?.Invoke(report);
-        //        };
-        //
-        //      "landed" lives on inside the lambda, so both places share the same one.
-        //
-        //   c. Give Attack(...) a fourth parameter, Action land, and pass land in
-        //      MakeAttackJob: job.Play = Attack(attacker, target, report, land);
-        //   d. In Attack, call land(); straight after the _attackHitTime wait, before the target
-        //      reacts. (Misses count too: the log still needs to say "Miss.")
-        //   e. In job.Finish, call land(); as well (after the facing line).
-        //
-        //   Worked timing: the swing starts at 0 s, the blade lands at 0.35 s. AttackLanded fires
-        //   at 0.35 s, so the HP bar drops and the log line appears just as the Skeleton flinches.
-        //   Checkpoint: compiles. Nothing listens yet; that's Stage 2.
+        public event Action<AttackReport> AttackLanded;
 
         ///////////////////////////////////
         // ---------- Start ---------- //
@@ -229,19 +197,28 @@ namespace DnDCombat.Unity
             CombatantView target = _game.ViewOf(report.Target);
             if (attacker == null || target == null) return null;
 
+            bool landed = false;
+            Action land = () =>
+            {
+                if (landed) return;          // already announced: do nothing
+                landed = true;
+                AttackLanded?.Invoke(report);
+            };
+
             BodyJob job = new BodyJob();
-            job.Play = Attack(attacker, target, report);
+            job.Play = Attack(attacker, target, report, land);
 
             // The end result: facing the target, and the target lying down if that killed it
             job.Finish = () =>
             {
                 attacker.FaceTowards(target.transform.position);
+                land();   // announce it to the log and the HP bar
                 if (report.TargetDefeated) target.SetDead(true);
             };
             return job;
         }
 
-        private IEnumerator Attack(CombatantView attacker, CombatantView target, AttackReport report)
+        private IEnumerator Attack(CombatantView attacker, CombatantView target, AttackReport report, Action land)
         {
             yield return TurnTowards(attacker, target.transform.position);
 
@@ -249,7 +226,9 @@ namespace DnDCombat.Unity
 
             yield return new WaitForSeconds(_attackHitTime);   // the moment the blade lands
 
-            if(!report.Result.Hit)
+            land();   // announce it to the log and the HP bar
+
+            if (!report.Result.Hit)
             {             
             }
             else if (report.TargetDefeated)

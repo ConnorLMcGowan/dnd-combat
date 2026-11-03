@@ -10,10 +10,7 @@ namespace DnDCombat.Core
     public class TurnManager
     {
         public event Action<CombatState> CombatEnded;
-        // TODO(guide): UI 1a. Add a second event here:
-        //   public event Action<Combatant> TurnStarted;    // after a creature's turn begins, its resources refreshed
-        //   Listeners can read Round and Current for the rest. The banner ("Round 2: Skeleton's
-        //   turn"), the log and the initiative panel's highlight all hang off this.
+        public event Action <Combatant> TurnStarted;    // after a creature's turn begins, its resources refreshed
         private readonly IDice _dice;
         private readonly List<Combatant> _combatants;
         private List<Combatant> _order = new List<Combatant>();
@@ -106,12 +103,8 @@ namespace DnDCombat.Core
                     Current.ActionAvailable = true;
                     Current.BonusActionAvailable = true;
                     Current.AttacksRemaining = 0;
-                    // TODO(guide): UI 1b. Raise it here, after the resources are set and before
-                    //   the return: TurnStarted?.Invoke(Current);
-                    //   This is the only place a turn begins (both StartCombat and EndTurn come
-                    //   through here), so one line covers the first turn and every one after.
-                    //   Pitfall: don't raise it in StartCombat or EndTurn as well, or it fires twice.
-                    //   Checkpoint: compiles, every test still passes.
+
+                    TurnStarted?.Invoke(Current);
                     return;
                 }
                 index++;

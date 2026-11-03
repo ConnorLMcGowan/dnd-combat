@@ -5,7 +5,9 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "DnDCombat.Core",
-        "DnDCombat.Unity"
+        "DnDCombat.Unity",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [
         "Editor"
@@ -22,4 +24,4 @@
     ],
     "versionDefines": [],
     "noEngineReferences": false
-}
+}

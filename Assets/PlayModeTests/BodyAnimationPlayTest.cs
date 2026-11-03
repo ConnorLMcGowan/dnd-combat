@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -248,6 +249,69 @@ public class BodyAnimationPlayTest
         yield return _world.WaitUntilIdle();
 
         Assert.That(Body(_world.Hero).position, Is.EqualTo(Floor(P(7, 0, 9))).Using(Near));
+    }
+
+    ///////////////////////////////////////////
+    // ---------- AttackLanded ---------- //
+    ///////////////////////////////////////////
+
+    [UnityTest]
+    public IEnumerator AttackLanded_WaitsForTheBlade_ThenFiresExactlyOnce()
+    {
+        // The Core resolves the attack instantly. The HP bar and log must wait for the swing.
+        yield return StartWorld(new Vector3Int(8, 0, 7));
+        Combatant hero = _world.Hero;
+        _world.Game.TryGetAttack(hero, out AttackProfile club);
+        int landed = 0;
+        float landedAt = -1f;
+        _world.Director.AttackLanded += _ =>
+        {
+            landed++;
+            if (landedAt < 0f) landedAt = Time.time;
+        };
+        float swungAt = Time.time;
+
+        Assume.That(Controller.TryAttack(hero, _world.Enemy, club).Success, Is.True);
+        Assert.That(landed, Is.EqualTo(0), "Announced before the swing even started");
+
+        yield return _world.WaitUntilIdle();
+
+        Assert.That(landed, Is.EqualTo(1), "Must be once, even though Finish runs after Play");
+        Assert.That(landedAt - swungAt, Is.GreaterThanOrEqualTo(0.09f), "Should wait for the hit time (0.1 s in these tests)");
+    }
+
+    [UnityTest]
+    public IEnumerator AMiss_IsStillAnnounced()
+    {
+        // AC 30: only a natural 20 can hit, and the log still needs to say "Miss."
+        yield return StartWorld(new Vector3Int(8, 0, 7), goblinArmourClass: 30);
+        Combatant hero = _world.Hero;
+        _world.Game.TryGetAttack(hero, out AttackProfile club);
+        List<AttackReport> landed = new List<AttackReport>();
+        _world.Director.AttackLanded += landed.Add;
+
+        Controller.TryAttack(hero, _world.Enemy, club);
+        yield return _world.WaitUntilIdle();
+
+        Assume.That(landed.Count == 1 && !landed[0].Result.Hit, "This seed rolled a natural 20");
+        Assert.That(landed.Count, Is.EqualTo(1));
+    }
+
+    [UnityTest]
+    public IEnumerator AMoveThenAnAttack_AnnouncesTheAttackOnlyAfterTheWalk()
+    {
+        yield return StartWorld(new Vector3Int(9, 0, 7));
+        Combatant hero = _world.Hero;
+        _world.Game.TryGetAttack(hero, out AttackProfile club);
+        bool arrivedFirst = false;
+        _world.Director.AttackLanded += _ =>
+            arrivedFirst = Vector3.Distance(Body(hero).position, Floor(P(8, 0, 8))) < 0.05f;
+
+        Controller.TryMove(hero, P(8, 0, 8));
+        Assume.That(Controller.TryAttack(hero, _world.Enemy, club).Success, Is.True);
+        yield return _world.WaitUntilIdle();
+
+        Assert.That(arrivedFirst, Is.True, "The attack was announced before the body finished walking");
     }
 }
 #endif

@@ -133,7 +133,7 @@ namespace DnDCombat.Core
                 attacker.AttacksRemaining = attacker.Creature.AttacksPerAction - 1;
             }
             // 4. Announce the attack (HP is read now, so each report keeps its own value)
-            AttackReport report = new AttackReport(attacker, target, result,
+            AttackReport report = new AttackReport(attacker, target, attack, result,
                                                    target.Creature.CurrentHP,
                                                    target.Creature.IsDefeated);
             AttackResolved?.Invoke(report);

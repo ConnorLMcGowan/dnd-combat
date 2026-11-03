@@ -1,5 +1,6 @@
 using DnDCombat.Core;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace DnDCombat.Unity
@@ -36,7 +37,10 @@ namespace DnDCombat.Unity
 
         private void Update()
         {
-            if(_director != null && _director.IsBusy)
+            if(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                return;
+
+            if (_director != null && _director.IsBusy)
                 return;
             if (_game == null || _game.Controller == null)
                 return;

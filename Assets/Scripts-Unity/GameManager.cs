@@ -50,6 +50,10 @@ namespace DnDCombat.Unity
         private readonly Dictionary<Combatant, CombatantView> _views = new Dictionary<Combatant, CombatantView>();
         private readonly Dictionary<Combatant, List<AttackProfile>> _attacks = new Dictionary<Combatant, List<AttackProfile>>();
 
+        // Which asset each combatant came from. A Combatant is Core and knows nothing of assets,
+        // so this is where the two are linked (like _views links each combatant to its body).
+        private readonly Dictionary<Combatant, CreatureDefinition> _definitions = new Dictionary<Combatant, CreatureDefinition>();
+
         // For naming: how many entries share a definition, and how many have been named so far
         private readonly Dictionary<CreatureDefinition, int> _nameTotals = new Dictionary<CreatureDefinition, int>();
         private readonly Dictionary<CreatureDefinition, int> _nameSeen = new Dictionary<CreatureDefinition, int>();
@@ -71,6 +75,15 @@ namespace DnDCombat.Unity
 
             attack = list[0];
             return true;
+        }
+
+        // The asset a combatant was made from (for its portrait and anything else it holds),
+        // or null if there isn't one
+        public CreatureDefinition DefinitionOf(Combatant combatant)
+        {
+            if (combatant == null) return null;
+            _definitions.TryGetValue(combatant, out CreatureDefinition definition);
+            return definition;
         }
 
         // Every attack a combatant has, for choosing between them later
@@ -123,6 +136,7 @@ namespace DnDCombat.Unity
             _combatants.Clear();
             _views.Clear();
             _attacks.Clear();
+            _definitions.Clear();
             for (int i = 0; i < _spawns.Count; i++)
             {
                 if (!SpawnCombatant(_spawns[i], i, grid))
@@ -211,6 +225,7 @@ namespace DnDCombat.Unity
             _combatants.Add(combatant);
             _views[combatant] = view;
             _attacks[combatant] = attacks;
+            _definitions[combatant] = entry.Definition;
             return true;
         }
 

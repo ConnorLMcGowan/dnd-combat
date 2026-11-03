@@ -35,6 +35,7 @@ namespace DnDCombat.Unity
         [Header("Identity")]
         [SerializeField] private string _displayName = "New Creature";
         [SerializeField] private GameObject _viewPrefab;
+        [SerializeField] private Sprite _portrait;     // shown on its initiative card (optional)
 
         [Header("Ability scores")]
         [SerializeField] private int _strength = 10;
@@ -61,10 +62,11 @@ namespace DnDCombat.Unity
 
         public string DisplayName => _displayName;
         public GameObject ViewPrefab => _viewPrefab;
+        public Sprite Portrait => _portrait;        
 
-        ///////////////////////////////////////////////
+        ///////////////////////////////////////////////////
         // ---------- Build the Core creature ---------- //
-        ///////////////////////////////////////////////
+        //////////////////////////////////////////////////
         public Creature CreateCreature(string name)
         {
             return new Creature(name,
@@ -100,4 +102,4 @@ namespace DnDCombat.Unity
             return result;
         }
     }
-}
+}

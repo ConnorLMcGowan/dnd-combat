@@ -497,4 +497,53 @@ public class GameManagerTest
         Assert.That(game.Controller.Turns.State, Is.EqualTo(CombatState.HeroesWon));
         Assert.That(game.Controller.Turns.Current, Is.Null);
     }
+
+    ///////////////////////////////////////////
+    // ---------- DefinitionOf ---------- //
+    ///////////////////////////////////////////
+
+    [Test]
+    public void DefinitionOf_GivesTheAssetEachCombatantWasMadeFrom()
+    {
+        GameManager game = MakeFight(out CreatureDefinition heroDef, out CreatureDefinition goblinDef);
+
+        Assert.That(game.DefinitionOf(game.Combatants[0]), Is.SameAs(heroDef));
+        Assert.That(game.DefinitionOf(game.Combatants[1]), Is.SameAs(goblinDef));
+    }
+
+    [Test]
+    public void DefinitionOf_CreaturesFromTheSameAsset_ShareIt()
+    {
+        // Every Zombie shows the Zombie portrait
+        CreatureDefinition zombie = MakeDef("Zombie");
+        GameManager game = MakeGame(MakeArena(), 1,
+                                    new Spawn(zombie, Team.Enemies, new Vector3Int(1, 0, 1)),
+                                    new Spawn(zombie, Team.Enemies, new Vector3Int(3, 0, 1)),
+                                    new Spawn(MakeDef("Hero"), Team.Heroes, new Vector3Int(5, 0, 5)));
+        Call(game, "Awake");
+
+        Assert.That(game.DefinitionOf(game.Combatants[0]), Is.SameAs(zombie));
+        Assert.That(game.DefinitionOf(game.Combatants[1]), Is.SameAs(zombie));
+    }
+
+    [Test]
+    public void DefinitionOf_NullOrAStranger_IsNull()
+    {
+        GameManager game = MakeFight(out _, out _);
+
+        Assert.That(game.DefinitionOf(null), Is.Null);
+        Assert.That(game.DefinitionOf(new Combatant(new Creature("Stranger"), Team.Heroes)), Is.Null);
+    }
+
+    [Test]
+    public void DefinitionOf_ForgetsLastTimesCombatants_WhenAwakeRunsAgain()
+    {
+        GameManager game = MakeFight(out _, out _);
+        Combatant oldHero = game.Combatants[0];
+
+        Call(game, "Awake");
+
+        Assert.That(game.DefinitionOf(oldHero), Is.Null, "A combatant from the previous setup");
+        Assert.That(game.DefinitionOf(game.Combatants[0]), Is.Not.Null);
+    }
 }

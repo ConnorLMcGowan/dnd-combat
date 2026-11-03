@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using DnDCombat.Core;
+using UnityEngine.EventSystems;
 
 namespace DnDCombat.Unity
 {
@@ -152,7 +153,9 @@ namespace DnDCombat.Unity
             hover = default;
             enemy = null;
 
-            if(_director != null && _director.IsBusy)
+            if(EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) // ignore the mouse while it's over the UI, so clicking End Turn (or the log) doesn't also click the floor behind it
+                return false;
+            if (_director != null && _director.IsBusy)
                 return false;
             if (_game == null || _game.Controller == null || _game.Space == null || _camera == null)
                 return false;

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DnDCombat.Unity::DnDCombat.Unity.CreatureDefinition
   _displayName: Fighter
   _viewPrefab: {fileID: 5978006185790572985, guid: f0dad48447c705e48a8ad8c9ae9e7219, type: 3}
+  _portrait: {fileID: -1632105699978703156, guid: 25cc8767fb8364140b6217fde3306071, type: 3}
   _strength: 16
   _dexterity: 12
   _constitution: 14

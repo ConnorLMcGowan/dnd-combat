@@ -375,4 +375,63 @@ public class BodyDirectorTest
 
         Assert.That(_director.IsBusy, Is.False);
     }
+
+    ///////////////////////////////////////////
+    // ---------- AttackLanded ---------- //
+    ///////////////////////////////////////////
+    // The HP bars and the log listen to this, so it must arrive exactly once per attack.
+    // The timing (when the blade lands) is checked in play mode.
+
+    [Test]
+    public void AnAttack_IsAnnouncedOnce_WithItsReport()
+    {
+        Build(new Spawn(Def("Hero"), Team.Heroes, new Vector3Int(1, 0, 1)),
+              new Spawn(Def("Goblin"), Team.Enemies, new Vector3Int(2, 0, 1)));
+        StartDirector();
+        Combatant hero = Named("Hero");
+        TurnOf(hero);
+        _game.TryGetAttack(hero, out AttackProfile club);
+        List<AttackReport> landed = new List<AttackReport>();
+        _director.AttackLanded += landed.Add;
+
+        Assume.That(_game.Controller.TryAttack(hero, Named("Goblin"), club).Success, Is.True);
+
+        Assert.That(landed.Count, Is.EqualTo(1));
+        Assert.That(landed[0].Attacker, Is.SameAs(hero));
+        Assert.That(landed[0].Target, Is.SameAs(Named("Goblin")));
+        Assert.That(landed[0].Attack.Name, Is.EqualTo("Club"));
+    }
+
+    [Test]
+    public void AMove_IsNotAnnouncedAsAnAttack()
+    {
+        Build(new Spawn(Def("Hero"), Team.Heroes, new Vector3Int(1, 0, 1)),
+              new Spawn(Def("Goblin"), Team.Enemies, new Vector3Int(8, 0, 8)));
+        StartDirector();
+        Combatant hero = Named("Hero");
+        TurnOf(hero);
+        int landed = 0;
+        _director.AttackLanded += _ => landed++;
+
+        _game.Controller.TryMove(hero, P(1, 0, 4));
+
+        Assert.That(landed, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void ARefusedAttack_IsNotAnnounced()
+    {
+        Build(new Spawn(Def("Hero"), Team.Heroes, new Vector3Int(1, 0, 1)),
+              new Spawn(Def("Goblin"), Team.Enemies, new Vector3Int(8, 0, 8)));
+        StartDirector();
+        Combatant hero = Named("Hero");
+        TurnOf(hero);
+        _game.TryGetAttack(hero, out AttackProfile club);
+        int landed = 0;
+        _director.AttackLanded += _ => landed++;
+
+        _game.Controller.TryAttack(hero, Named("Goblin"), club);     // far out of reach
+
+        Assert.That(landed, Is.EqualTo(0));
+    }
 }
