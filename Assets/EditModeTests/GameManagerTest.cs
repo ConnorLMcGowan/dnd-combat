@@ -218,7 +218,7 @@ public class GameManagerTest
     {
         GameManager game = MakeFight(out _, out _);
 
-        ArenaBuilder arena = Object.FindObjectsByType<ArenaBuilder>(FindObjectsSortMode.None).Single(a => a.name == "Test Arena");
+        ArenaBuilder arena = Object.FindObjectsByType<ArenaBuilder>().Single(a => a.name == "Test Arena");
         int floors = arena.transform.Cast<Transform>().Count(t => t.name == "Floor");
         Assert.That(floors, Is.EqualTo(1));
     }
